@@ -1,6 +1,7 @@
 
 fun add(list: MutableList<Expense>) {
     println("Введите категорию")
+    println("Возможные категории: ${Category.entries}")
     val userInput = readln()
 
     if(userInput.isBlank()){
@@ -15,6 +16,10 @@ fun add(list: MutableList<Expense>) {
         else -> Category.OTHER
     }
 
+    if (category == Category.OTHER && userInput.lowercase()!="other") {
+        println("Ваш ввод не распознан. Расход будет добавлен в категорию $category.")
+    }
+
     println("Введите сумму расходов")
     val amount = readln().toIntOrNull()
 
@@ -23,8 +28,9 @@ fun add(list: MutableList<Expense>) {
         return
     }
 
-    list.add(Expense(category,amount))
-    println("Добавлено: категория - $category, сумма расходов - $amount")
+    val expense = Expense(category, amount)
+    list.add(expense)
+    println("Добавлено: ${expense.describe()}")
 
 }
 
@@ -61,13 +67,13 @@ fun summary(list: List<Expense>) {
 
 fun deleteLast(list: MutableList<Expense>){
     val removed = list.removeLastOrNull()
-    if (removed != null) println("Удалено: ${removed.category}, ${removed.sum}")
+    if (removed != null) println("Удалено: ${removed.describe()}")
     else println("Список пока пуст")
 }
 
 data class Expense (val category: Category, val sum: Int): Describable {
     override fun describe(): String =
-        ("Категория: $category. Сумма: $sum. ${sizeOf(sum)}")
+        ("Категория - $category. Сумма - $sum. ${sizeOf(sum)}")
 }
 
 
