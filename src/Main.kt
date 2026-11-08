@@ -45,6 +45,9 @@ fun sizeOf(amount: Int): String {
     }
 }
 
+fun List<Expense>.totalSum(): Int = this.sumOf { it.sum }
+
+
 fun summary(list: List<Expense>) {
     if (list.isEmpty()) {
         println("Список пока пуст.")
@@ -52,20 +55,8 @@ fun summary(list: List<Expense>) {
     }
 
     val groupedList = list.groupBy{it.category}
-
-    for((category, items) in groupedList) {
-        val sum = items.sumOf { it.sum }
-
-        println("$category: $sum")
-    }
-//    list.filter { it.sum > 1000 }.forEach { println(it) }
-//    list.map { "${it.category}: ${it.sum}" }.forEach { println(it) }
-//    println(list.any { it.category == Category.TRANSPORT})
-//    println(list.sortedByDescending { it.sum })
-
+    groupedList.forEach { (category, items) -> println("$category: ${items.totalSum()}")}
     println("Общий расход: ${list.sumOf { it.sum }}")
-    println("Еда всего: ${list.filter { it.category == Category.FOOD }.sumOf { it.sum }}")
-    println("Самый крупный расход: ${list.maxByOrNull { it.sum }?.describe()}")
 }
 
 fun deleteLast(list: MutableList<Expense>){
@@ -88,27 +79,54 @@ interface Describable {
     fun describe(): String
 }
 
+sealed class MenuCommand {
+    object Add: MenuCommand()
+    object Show: MenuCommand()
+    object Summary: MenuCommand()
+    object DeleteLast: MenuCommand()
+    object Exit: MenuCommand()
+    object WrongInput: MenuCommand()
+}
+
+fun getUserInput():MenuCommand {
+    val choice = readln()
+    return when (choice.trim()) {
+        "1" -> MenuCommand.Add
+        "2" -> MenuCommand.Show
+        "3" -> MenuCommand.Summary
+        "4" -> MenuCommand.DeleteLast
+        "0" -> MenuCommand.Exit
+        else -> MenuCommand.WrongInput
+    }
+}
+
 
 fun main() {
     val expenses = mutableListOf<Expense>()
 
     while(true){
-        println("Меню")
-        println("1 - Добавить")
-        println("2 - Показать")
-        println("3 - Итоги по категориям")
-        println("4 - Удалить последний расход")
-        println("0 - Выход")
-        val choice = readln()
-        when (choice.trim()) {
-            "1" -> add(expenses)
-            "2" -> show(expenses)
-            "3" -> summary(expenses)
-            "4" -> deleteLast(expenses)
-            "0" -> break
-            else -> println("Нет такого пункта меню.")
+        printMenu()
+
+        val menuCommand = getUserInput()
+
+        when (menuCommand) {
+            MenuCommand.Add -> add(expenses)
+            MenuCommand.Show -> show(expenses)
+            MenuCommand.Summary-> summary(expenses)
+            MenuCommand.DeleteLast -> deleteLast(expenses)
+            MenuCommand.Exit -> break
+            MenuCommand.WrongInput -> println("Нет такого пункта меню.")
         }
 
 
     }
+}
+
+private fun printMenu() {
+    println("Меню")
+    println("1 - Добавить")
+    println("2 - Показать")
+    println("3 - Итоги по категориям")
+    println("4 - Удалить последний расход")
+    println("0 - Выход")
 }
